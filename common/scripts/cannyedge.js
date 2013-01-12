@@ -35,16 +35,18 @@ if(!window.console){
       img.src = '/common/images/sample.jpg';
       //img.src = 'http://jsrun.it/assets/p/G/H/t/pGHtK.jpg';
 
-      img.addEventListener('load',(function() {
-        var w = img.width > this.canvas.width-1 ? this.canvas.width-1 : img.width, 
-          h = img.height > this.canvas.height-1 ? this.canvas.height-1 : img.height;
+      var self = this;
+      img.onload = function() {
         
-        this.ctx.drawImage(img,0,0,w,h);
-        this.imageData = this.ctx.getImageData(0,0,w,h);
-        this.ctx.clearRect(0,0,w,h);
+        var w = img.width > self.canvas.width-1 ? self.canvas.width-1 : img.width, 
+          h = img.height > self.canvas.height-1 ? self.canvas.height-1 : img.height;
         
-        var ced = new cannyEdgeDetecotor({
-          imageData: this.imageData,
+        self.ctx.drawImage(img,0,0,w,h);
+        self.imageData = self.ctx.getImageData(0,0,w,h);
+        self.ctx.clearRect(0,0,w,h);
+        
+        var ced = new CannyEdgeDetecotor({
+          imageData: self.imageData,
           //以下省略可
           GaussianSiguma: 4,
           GaussianSize: 5,
@@ -56,15 +58,15 @@ if(!window.console){
           isHysteresisThreshold: true
         });
         
-        this.ctx.putImageData(this.imageData,0,0);
+        self.ctx.putImageData(self.imageData,0,0);
         
-        doc.body.appendChild(this.canvas);
-      }).call(this));
+        doc.body.appendChild(self.canvas);
+      }
       
     }
   }
   
-  var cannyEdgeDetecotor = function(args) {
+  var CannyEdgeDetecotor = function(args) {
     
     this.imageData = args.imageData;
     //params
@@ -99,7 +101,7 @@ if(!window.console){
     return this.init();
     
   }
-  cannyEdgeDetecotor.prototype = {
+  CannyEdgeDetecotor.prototype = {
     
     init: function() {
       if(this.isConvertGrayScale) this.convertGrayScale(this.imageData);

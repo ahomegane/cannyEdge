@@ -66,6 +66,9 @@ if(!window.console){
     }
   }
   
+  /**
+  * CannyEdgeDetector Class
+  */
   var CannyEdgeDetecotor = function(args) {
     
     this.imageData = args.imageData;
@@ -97,6 +100,9 @@ if(!window.console){
     //for sobel filter
     this.edge;//edge matrix
     this.edgeDir;//edgeDir matrix
+
+    this.edgeHeighVal = 255;
+    this.edgeLowVal = 0;
     
     return this.init();
     
@@ -143,7 +149,7 @@ if(!window.console){
       var color = this.imageDataToColorMatrix(imageData);
       
       var w = imageData.width, h = imageData.height;
-      
+
       //filter
       for(var x=0;x<w;x++) {
         for(var y=0;y<h;y++) {
@@ -300,8 +306,6 @@ if(!window.console){
     
     hysteresisThreshold: function(imageData, heigh, low) {
       
-      var heighVal = 255, lowVal = 0;
-      
       var color = this.color, edgeDir = this.edgeDir;
       
       var w = imageData.width, h = imageData.height;
@@ -391,9 +395,9 @@ if(!window.console){
       for(var x=0;x<w;x++) {
         for(var y=0;y<h;y++) {
           if(isEdge[x][y] == 1) {
-            color[x][y] = heighVal;
+            color[x][y] = this.edgeHeighVal;
           } else {
-            color[x][y] = lowVal;
+            color[x][y] = this.edgeLowVal;
           }
         }
       }
@@ -521,12 +525,14 @@ if(!window.console){
 
     },
     
-    imageDataToColorMatrix: function(imageData) {
+    imageDataToColorMatrix: function(imageData, isGrayScale) {
       
       var data = imageData.data, pixels = data.length/4, 
         w = imageData.width, h = imageData.height;
+
+      isGrayScale = isGrayScale || this.isGrayScale;
     
-      if(this.isGrayScale) {
+      if(isGrayScale) {
         //color matrix
         var color = [],
           colorCopy = [];
@@ -536,8 +542,8 @@ if(!window.console){
           color[x] = []; 
           colorCopy[x] = [];
           for(var y=0;y<h;y++) {
-            color[x][y] = data[(x + (y*h)) * 4 ];
-            colorCopy[x][y] = data[(x + (y*h)) * 4];
+            color[x][y] = data[(x + (y*w)) * 4 ];
+            colorCopy[x][y] = data[(x + (y*w)) * 4];
           }
         }
       } else {
@@ -550,12 +556,12 @@ if(!window.console){
           color.r[x] = []; color.g[x] = []; color.b[x] = [];
           colorCopy.r[x] = []; colorCopy.g[x] = []; colorCopy.b[x] = []; 
           for(var y=0;y<h;y++) {
-            color.r[x][y] = data[(x + (y*h)) * 4 ];
-            color.g[x][y] = data[(x + (y*h)) * 4 + 1];
-            color.b[x][y] = data[(x + (y*h)) * 4 + 2];
-            colorCopy.r[x][y] = data[(x + (y*h)) * 4 ];
-            colorCopy.g[x][y] = data[(x + (y*h)) * 4 + 1];
-            colorCopy.b[x][y] = data[(x + (y*h)) * 4 + 2];
+            color.r[x][y] = data[(x + (y*w)) * 4 ];
+            color.g[x][y] = data[(x + (y*w)) * 4 + 1];
+            color.b[x][y] = data[(x + (y*w)) * 4 + 2];
+            colorCopy.r[x][y] = data[(x + (y*w)) * 4 ];
+            colorCopy.g[x][y] = data[(x + (y*w)) * 4 + 1];
+            colorCopy.b[x][y] = data[(x + (y*w)) * 4 + 2];
           }
         }
       }
@@ -564,13 +570,14 @@ if(!window.console){
 
     },
     
-    colorMatrixToImageData: function(color, imageData, filterW) {
+    colorMatrixToImageData: function(color, imageData, filterW, isGrayScale) {
       
       var data = imageData.data, pixels = data.length/4, 
         w = imageData.width, h = imageData.height;
       
       filterW = filterW || 1;
-      
+      isGrayScale = isGrayScale || this.isGrayScale;
+
       if(this.isGrayScale) {
         //color matrix→imageData
         for(var i=0,l=pixels; i<l; i++) {
